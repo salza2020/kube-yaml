@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: landingpage-prod
+  namespace: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: landingpage-prod
+  template:
+    metadata:
+      labels:
+        app: landingpage-prod
+    spec:
+      containers:
+      - name: landingpage-prod
+        image: nazier1986/nginx-landing
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: landingpage-prod
+  namespace: production
+spec:
+  selector:
+    app: landingpage-prod
+  type: LoadBalancer
+  ports: 
+  - port: 80
+    targetPort: 80

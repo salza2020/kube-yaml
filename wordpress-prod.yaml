@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-prod
+  namespace: production
+  labels:
+    app: wordpress-prod
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: wordpress-prod
+    tier: frontend-prod
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pv-claim-prod
+  namespace: production
+  labels:
+    app: wordpress-prod
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-prod
+  namespace: production
+  labels:
+    app: wordpress-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wordpress-prod
+      tier: frontend-prod
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress-prod
+        tier: frontend-prod
+    spec:
+      containers:
+      - image: wordpress:4.8-apache
+        name: wordpress-prod
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: database.cft0sdpuovqh.ap-southeast-1.rds.amazonaws.com
+        - name: WORDPRESS_DB_NAME
+          value: wordpressprod
+        - name: WORDPRESS_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-user-pass
+              key: username.txt
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-user-pass
+              key: password.txt
+        ports:
+        - containerPort: 80
+          name: wordpress-prod
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-persistent-storage
+        persistentVolumeClaim:
+          claimName: wp-pv-claim-prod

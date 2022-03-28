@@ -1,0 +1,6 @@
+secretGenerator:
+- name: mysql-pass
+  literals:
+  - password=nazier1986
+resources:
+  - wordpress-staging.yaml

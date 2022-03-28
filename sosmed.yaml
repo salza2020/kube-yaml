@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sosmed-staging2
+  namespace: staging
+  labels:
+  
+    app: sosmed-staging2
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: sosmed-staging2
+    tier: frontend
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sosmed-staging2
+  namespace: staging
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sosmed-staging2
+  template:
+    metadata:
+      labels:
+        app: sosmed-staging2
+    spec:
+      containers:
+      - name: sosmed-staing2
+        image: nazier1986/phpstaging2
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 80
